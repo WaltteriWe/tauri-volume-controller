@@ -26,9 +26,13 @@ function renderState(state: AppState): void {
 
   if (state.current_media) {
     titleEl.textContent = state.current_media.title || "Unknown title";
-    artistEl.textContent = state.current_media.artist || "";
+    artistEl!.textContent = state.current_media.artist || "";
   } else {
     titleEl.textContent = "No media playing";
-    artistEl.textContent = "";
+    artistEl!.textContent = "";
   }
+
+
+  playBtn!.textContent = state.is_playing ? "Pause" : "Play";
 }
+
