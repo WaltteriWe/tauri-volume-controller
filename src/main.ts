@@ -34,5 +34,15 @@ function renderState(state: AppState): void {
 
 
   playBtn!.textContent = state.is_playing ? "Pause" : "Play";
+  volumeSlider!.value = String(state.volume);
+  volumeDisplay!.textContent = `${Math.round(state.volume * 100)}%`
 }
+
+window.addEventListener("DOMContentLoaded", async () => {
+  const playBtn = document.querySelector<HTMLButtonElement>("#play-pause")!;
+  const volumeSlider = document.querySelector<HTMLInputElement>("#volume-slider")!;
+
+  const initialState = await fetchState();
+  renderState(initialState)
+})
 
