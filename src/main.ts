@@ -1,5 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
-import { AppState, MediaInfo } from "./localtypes";
+import { AppState } from "./localtypes";
 
 
 
@@ -53,7 +53,7 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   volumeSlider.addEventListener("input", async () => {
     const volume = parseFloat(volumeSlider.value);
-    document.querySelector<HTMLElement>("#volume-display")!.textContent = 
+    document.querySelector<HTMLElement>("#volume-value")!.textContent = 
     `${Math.round(volume * 100)}%`
     await setVolume(volume)
   })
