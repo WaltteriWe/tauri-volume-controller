@@ -1,80 +1,34 @@
 # Desktop Media Controller
 
-A Tauri 2.0 desktop app that displays and controls media playing in your browser, working in tandem with a companion browser extension.
+A Tauri 2.0 desktop app for displaying and controlling media playing in your browser, built with Rust and TypeScript. Works in tandem with a companion browser extension running on `localhost:3030`.
 
-## How It Works
+## Features
 
-```
-Browser tab (audio/video)
-        │
-        │  navigator.mediaSession / HTMLMediaElement
-        ▼
-Browser Extension (content script)
-        │
-        │  POST /api/media   (track info, play state)
-        │  GET  /api/status  (poll for commands)
-        ▼
-Axum HTTP Server — localhost:3030
-        │
-        │  Arc<Mutex<AppState>>
-        ▼
-Tauri App (desktop window + system tray)
-        │
-        │  invoke() Tauri commands
-        ▼
-TypeScript UI (volume slider, play/pause, track info)
-```
+- 🎵 Displays currently playing track title and artist from the browser
+- 🔊 Volume slider synced in real time with the browser extension
+- ⏯ Play/Pause control that remotely commands the browser tab
+- 🖥 Lives in the system tray — show/hide the window at any time
+- 🔗 Browser extension integration:
+  - Receives media info pushed from the extension every 2s
+  - Serves volume and play/pause commands pulled by the extension every 500ms
+  - Command lock prevents the extension from overwriting server state immediately after a remote command
+  - https://github.com/WaltteriWe/chrome-volume-controller
 
-- The **content script** pushes the currently playing track to the server every 2 seconds, and polls for volume/playback commands every 500ms.
-- The **Tauri app** polls the server every second and renders the current state. Volume and play/pause changes are written to the server and picked up by the content script.
+## Tech Stack
 
-## Project Structure
+- Rust + Tauri 2.0
+- Axum (HTTP server on `localhost:3030`)
+- TypeScript + Vite (frontend UI)
 
-```
-desktop-media-controller/
-├── index.html                  # App window HTML
-├── src/
-│   ├── main.ts                 # TypeScript UI logic (invoke calls, polling)
-│   ├── localtypes.ts           # Shared TypeScript types (AppState, MediaInfo)
-│   └── styles.css              # App styles
-└── src-tauri/
-    └── src/
-        ├── main.rs             # Binary entry point
-        ├── lib.rs              # Tauri commands + app startup
-        ├── state.rs            # Shared AppState (Arc<Mutex<>>)
-        ├── api.rs              # Axum HTTP server (port 3030)
-        └── tray.rs             # System tray icon and menu
-```
+## Extension API
 
-## HTTP API
+The app exposes a local server at `http://localhost:3030` that the browser extension talks to.
 
-The Axum server runs on `http://localhost:3030` and is used by the browser extension.
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/api/status` | Returns full current state as JSON |
-| `POST` | `/api/media` | Update currently playing track info |
-| `POST` | `/api/volume` | Set volume (0.0 – 1.0) |
-
-### Example payloads
-
-**POST /api/media**
-```json
-{
-  "title": "Song Name",
-  "artist": "Artist Name",
-  "tab_id": 0,
-  "is_playing": true
-}
-```
-
-**POST /api/volume**
-```json
-{
-  "volume": 0.75,
-  "tab_id": 0
-}
-```
+| Endpoint | Method | Description |
+|---|---|---|
+| `/api/status` | GET | Returns `{ volume, is_playing, current_media }` — polled by the extension |
+| `/api/media` | POST | Receives current track title, artist, and playback state from the extension |
+| `/api/volume` | POST | Receives volume changes from the extension popup |
 
 **GET /api/status response**
 ```json
@@ -90,43 +44,12 @@ The Axum server runs on `http://localhost:3030` and is used by the browser exten
 }
 ```
 
-## Tauri Commands
-
-Called from TypeScript via `invoke()`:
-
-| Command | Arguments | Returns | Description |
-|---------|-----------|---------|-------------|
-| `get_current_media` | — | `AppState` JSON | Full state snapshot |
-| `set_volume` | `volume: f32` | `String` | Set volume (0.0–1.0) |
-| `toggle_play_pause` | — | `bool` | Toggle playback, returns new state |
-
-## Browser Extension
-
-The companion extension lives in a separate project. Its content script:
-
-- Reads `navigator.mediaSession` and `<audio>`/`<video>` elements to detect media
-- POSTs track info to `/api/media` every 2 seconds
-- Polls `/api/status` every 500ms and applies volume/playback changes to media elements
-- Uses a command lock to prevent the reporting loop from overwriting a command mid-flight
-
-Required `manifest.json` permissions:
-```json
-"host_permissions": ["<all_urls>", "http://localhost:3030/*"]
-```
-
-## Development
-
-**Prerequisites:** Rust, Node.js, and the [Tauri prerequisites](https://tauri.app/start/prerequisites/) for your OS.
+## Build
 
 ```bash
-# Install JS dependencies
 npm install
-
-# Run in development mode (hot reload)
-npm run tauri dev
-
-# Build for production
-npm run tauri build
+npm run tauri dev   # development (hot reload)
+npm run tauri build # production
 ```
 
-The Tauri dev window and the Axum HTTP server both start with `npm run tauri dev`. The HTTP server is available at `http://localhost:3030` as soon as the app launches.
+Requires Rust, Node.js, and the [Tauri prerequisites](https://tauri.app/start/prerequisites/) for your OS. The HTTP server starts automatically on `localhost:3030` alongside the app window.
