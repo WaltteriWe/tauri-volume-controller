@@ -44,5 +44,24 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   const initialState = await fetchState();
   renderState(initialState)
-})
+
+
+  playBtn.addEventListener("click", async () => {
+    const isNowPlaying = await togglePlayPause();
+    playBtn.textContent = isNowPlaying ? "Pause" : "Play";
+  })
+
+  volumeSlider.addEventListener("input", async () => {
+    const volume = parseFloat(volumeSlider.value);
+    document.querySelector<HTMLElement>("#volume-display")!.textContent = 
+    `${Math.round(volume * 100)}%`
+    await setVolume(volume)
+  })
+  
+  setInterval(async () => {
+    const state = await fetchState();
+    renderState(state);
+  
+  }, 1000)
+});
 
