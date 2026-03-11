@@ -10,34 +10,17 @@
 
   <body>
     <main class="container">
-      <h1>Welcome to Tauri</h1>
-
-      <div class="row">
-        <a href="https://vite.dev" target="_blank">
-          <img src="/src/assets/vite.svg" class="logo vite" alt="Vite logo" />
-        </a>
-        <a href="https://tauri.app" target="_blank">
-          <img
-            src="/src/assets/tauri.svg"
-            class="logo tauri"
-            alt="Tauri logo"
-          />
-        </a>
-        <a href="https://www.typescriptlang.org/docs" target="_blank">
-          <img
-            src="/src/assets/typescript.svg"
-            class="logo typescript"
-            alt="typescript logo"
-          />
-        </a>
+      <div id="media-info">
+        <p id="track-title">
+          No media playing
+        </p>
+        <p id="track-artist"></p>
       </div>
-      <p>Click on the Tauri logo to learn more about the framework</p>
+      <button id="play-pause">⏯️</button>
 
-      <form class="row" id="greet-form">
-        <input id="greet-input" placeholder="Enter a name..." />
-        <button type="submit">Greet</button>
-      </form>
-      <p id="greet-msg"></p>
+      <label for="volume-slider">Volume:</label>
+      <input type="range" id="volume-slider" min="0" max="100" step="0.1" value="1" />
+      <span id="volume-value">100%</span>
     </main>
   </body>
 </html>
